@@ -1,0 +1,7 @@
+name: ItemWorthDisplayer
+version: 1.2.0
+main: com.itemworthdisplayer.ItemWorthDisplayer
+api-version: '26.3'
+softdepend: [EconomyShopGUI, EconomyShopGUI-Premium, PacketEvents]
+author: OpenAI
+description: Adds client-side EconomyShopGUI sell values to item tooltips, including container contents.
