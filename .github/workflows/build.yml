@@ -1,0 +1,32 @@
+
+name: Build Minecraft Plugin
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn --batch-mode clean package
+
+      - name: Upload plugin JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: Minecraft-Plugin
+          path: target/*.jar
