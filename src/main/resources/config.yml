@@ -1,5 +1,0 @@
-# Only one tooltip line is shown: the total sell value of the item plus its contents.
-enabled: true
-total-format: '&6Total value: &f$%price%'
-# Stops recursion from deeply nested containers.
-max-container-depth: 4
