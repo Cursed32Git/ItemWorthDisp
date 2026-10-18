@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.util.SpigotConversionUtil;
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetCursorItem;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPlayerInventory;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
@@ -143,7 +143,6 @@ public final class ItemWorthDisplayer extends JavaPlugin {
 
         Double ownPrice = getSellPrice(player, item);
         if (ownPrice != null && ownPrice >= 0) {
-            result.itemPrice = ownPrice;
             result.total += ownPrice;
             result.hasAnyPrice = true;
         }
