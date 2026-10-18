@@ -185,40 +185,95 @@ public final class ItemWorthDisplayer extends JavaPlugin {
         return contents;
     }
 
-    private Double getSellPrice(Player player, ItemStack item) {
-        try {
-            Class<?> hook = Class.forName("me.gypopo.economyshopgui.api.EconomyShopGUIHook");
-            Object shopItem = null;
-            for (Method method : hook.getMethods()) {
-                if (!method.getName().equals("getShopItem") || method.getParameterCount() != 2) continue;
-                Class<?>[] p = method.getParameterTypes();
-                if (p[0].isAssignableFrom(player.getClass()) && p[1].isAssignableFrom(item.getClass())) {
-                    shopItem = method.invoke(null, player, item);
+
+private Double getSellPrice(Player player, ItemStack item) {
+    try {
+        Class<?> hook = Class.forName(
+            "me.gypopo.economyshopgui.api.EconomyShopGUIHook"
+        );
+
+        Object shopItem = null;
+
+        for (Method method : hook.getMethods()) {
+            if (!method.getName().equals("getShopItem")
+                    || method.getParameterCount() != 2) {
+                continue;
+            }
+
+            Class<?>[] p = method.getParameterTypes();
+
+            if (p[0].isAssignableFrom(player.getClass())
+                    && p[1].isAssignableFrom(item.getClass())) {
+                shopItem = method.invoke(null, player, item);
+                break;
+            }
+        }
+
+        if (shopItem == null) {
+            return null;
+        }
+
+        for (Method method : hook.getMethods()) {
+            if (!method.getName().equals("getItemSellPrice")) {
+                continue;
+            }
+
+            Class<?>[] p = method.getParameterTypes();
+            if (p.length < 3 || p.length > 5) {
+                continue;
+            }
+
+            Object[] args = new Object[p.length];
+            boolean foundShop = false;
+            boolean foundItem = false;
+            boolean foundPlayer = false;
+            int integerParams = 0;
+            boolean valid = true;
+
+            for (int i = 0; i < p.length; i++) {
+                if (!foundShop && p[i].isInstance(shopItem)) {
+                    args[i] = shopItem;
+                    foundShop = true;
+                } else if (!foundItem
+                        && p[i].isAssignableFrom(item.getClass())) {
+                    args[i] = item;
+                    foundItem = true;
+                } else if (!foundPlayer
+                        && p[i].isAssignableFrom(player.getClass())) {
+                    args[i] = player;
+                    foundPlayer = true;
+                } else if (p[i] == int.class
+                        || p[i] == Integer.class) {
+                    args[i] = integerParams++ == 0
+                            ? item.getAmount() : 0;
+                } else {
+                    valid = false;
                     break;
                 }
             }
-            if (shopItem == null) return null;
-            for (Method method : hook.getMethods()) {
-                if (!method.getName().equals("getItemSellPrice") || method.getParameterCount() != 4) continue;
-                Class<?>[] p = method.getParameterTypes();
-                Object[] args = new Object[4];
-                boolean foundShop = false, foundPlayer = false, foundItem = false, foundAmount = false;
-                for (int i = 0; i < p.length; i++) {
-                    if (!foundShop && p[i].isInstance(shopItem)) { args[i] = shopItem; foundShop = true; }
-                    else if (!foundPlayer && p[i].isAssignableFrom(player.getClass())) { args[i] = player; foundPlayer = true; }
-                    else if (!foundItem && p[i].isAssignableFrom(item.getClass())) { args[i] = item; foundItem = true; }
-                    else if ((p[i] == int.class || p[i] == Integer.class) && !foundAmount) { args[i] = item.getAmount(); foundAmount = true; }
-                }
-                if (foundShop && foundPlayer && foundItem && foundAmount) {
-                    Object price = method.invoke(null, args);
-                    if (price instanceof Number number) return number.doubleValue();
-                }
+
+            if (!valid || !foundShop || !foundItem || !foundPlayer) {
+                continue;
             }
-        } catch (ReflectiveOperationException | LinkageError ignored) {
-            // ESGUI API versions vary; a missing method simply means no price can be shown.
+
+            Object result = method.invoke(null, args);
+
+            if (result instanceof Number number
+                    && Double.isFinite(number.doubleValue())
+                    && number.doubleValue() >= 0) {
+                return number.doubleValue();
+            }
         }
-        return null;
+    } catch (ReflectiveOperationException | LinkageError ex) {
+        getLogger().fine(
+            "EconomyShopGUI price lookup failed: "
+            + ex.getClass().getSimpleName() + ": " + ex.getMessage()
+        );
     }
+
+    return null;
+}
+
 
     private String color(String input) {
         return ChatColor.translateAlternateColorCodes('&', input == null ? "" : input);
