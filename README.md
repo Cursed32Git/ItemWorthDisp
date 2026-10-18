@@ -14,7 +14,7 @@ The plugin modifies outgoing item packets so the added tooltip is transient and 
 - PacketEvents 2.14.0 or newer (for Minecraft 26.3 packet support)
 - Maven 3.9+ to build from source
 
-PacketEvents must be installed separately; it is not bundled into this project.
+PacketEvents must be installed separately; it is not bundled into this project. The plugin declares `packetevents` as a hard dependency so Paper makes its classes available while loading this plugin.
 
 ## Build
 
